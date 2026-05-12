@@ -15,6 +15,7 @@
         <h1>Pomodoro</h1>
       </div>
       <div class="header-actions">
+        <button id="flipToggle" class="btn-icon" title="Toggle Flip Clock">🔄</button>
         <button id="darkModeToggle" class="btn-icon" title="Toggle Dark Mode">🌙</button>
       </div>
     </header>
@@ -38,7 +39,8 @@
     <!-- Timer View -->
     <section id="view-timer" class="view active">
       <div class="timer-display">
-        <div class="timer-progress-ring">
+        <!-- Original ring timer -->
+        <div class="timer-progress-ring" id="ringTimer">
           <svg width="280" height="280" viewBox="0 0 280 280">
             <circle cx="140" cy="140" r="125" class="progress-bg" />
             <circle cx="140" cy="140" r="125" class="progress-bar" />
@@ -49,6 +51,34 @@
             <div class="timer-category" id="timerCategory">Select a category</div>
           </div>
         </div>
+        
+        <!-- Flip clock -->
+        <div class="flip-clock hidden" id="flipClock">
+          <div class="flip-clock-digits" id="flipClockDigits">
+            <div class="flip-digit" data-digit="0" id="fd-tens-min">
+              <div class="flip-top">0</div>
+              <div class="flip-bottom">0</div>
+              <div class="flip-overlay"></div>
+            </div>
+            <div class="flip-digit" data-digit="0" id="fd-ones-min">
+              <div class="flip-top">0</div>
+              <div class="flip-bottom">0</div>
+              <div class="flip-overlay"></div>
+            </div>
+            <div class="flip-sep">:</div>
+            <div class="flip-digit" data-digit="0" id="fd-tens-sec">
+              <div class="flip-top">0</div>
+              <div class="flip-bottom">0</div>
+              <div class="flip-overlay"></div>
+            </div>
+            <div class="flip-digit" data-digit="0" id="fd-ones-sec">
+              <div class="flip-top">0</div>
+              <div class="flip-bottom">0</div>
+              <div class="flip-overlay"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="timer-controls">
           <button id="startBtn" class="btn btn-primary">Start</button>
           <button id="pauseBtn" class="btn btn-secondary" disabled>Pause</button>

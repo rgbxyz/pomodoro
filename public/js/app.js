@@ -48,6 +48,19 @@ const pauseBtn = $('pauseBtn');
 const resetBtn = $('resetBtn');
 const progressBar = document.querySelector('.progress-bar');
 const darkModeToggle = $('darkModeToggle');
+const flipToggle = $('flipToggle');
+const ringTimer = $('ringTimer');
+const flipClock = $('flipClock');
+
+// Flip clock digit elements
+const flipDigits = {
+  tensMin: $('fd-tens-min'),
+  onesMin: $('fd-ones-min'),
+  tensSec: $('fd-tens-sec'),
+  onesSec: $('fd-ones-sec')
+};
+let flipClockEnabled = false;
+let prevFlipTime = '';
 
 // === Audio Beep ===
 function playBeep() {
@@ -102,40 +115,6 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
-
-function updateTimerDisplay() {
-  timerDisplay.textContent = formatTime(state.timer.timeLeft);
-  
-  const phases = {
-    focus: 'Focus',
-    shortBreak: 'Short Break',
-    longBreak: 'Long Break'
-  };
-  timerPhase.textContent = phases[state.timer.phase];
-  
-  // Use category color if one is selected, otherwise phase defaults
-  const selectedCat = state.timer.selectedCategoryId
-    ? window.allCategories?.find(c => c.id === state.timer.selectedCategoryId)
-    : null;
-  
-  let timerColor;
-  if (selectedCat) {
-    timerColor = selectedCat.color;
-  } else {
-    const defaultColors = {
-      focus: 'var(--primary)',
-      shortBreak: '#4CAF50',
-      longBreak: '#2196F3'
-    };
-    timerColor = defaultColors[state.timer.phase];
-  }
-  
-  progressBar.style.stroke = timerColor;
-  timerPhase.style.color = timerColor;
-  
-  updateProgress();
-  updateSessionStatus();
 }
 
 function updateSessionStatus() {
@@ -348,6 +327,15 @@ async function loadSettings() {
     state.timer.totalTime = durations[state.timer.phase];
     updateTimerDisplay();
     
+    // Apply flip clock preference
+    if (settings.flipClock) {
+      flipClockEnabled = true;
+      ringTimer.classList.add('hidden');
+      flipClock.classList.remove('hidden');
+      flipToggle.textContent = '🔢';
+      flipToggle.title = 'Show Ring Timer';
+    }
+    
     // Populate settings form
     $('focusDuration').value = Math.floor(state.settings.focusDuration / 60);
     $('shortBreak').value = Math.floor(state.settings.shortBreak / 60);
@@ -400,6 +388,129 @@ document.addEventListener('DOMContentLoaded', () => {
 if ('Notification' in window) {
   Notification.requestPermission();
 }
+
+// === Flip Clock Functions ===
+function setFlipDigit(digitEl, value) {
+  const top = digitEl.querySelector('.flip-top');
+  const bottom = digitEl.querySelector('.flip-bottom');
+  const currentVal = digitEl.dataset.digit;
+  
+  if (currentVal === String(value)) return; // No change needed
+  
+  // Update the bottom half immediately (it shows the previous value during flip)
+  bottom.textContent = currentVal;
+  // Set the top half to the new value (it flips to reveal)
+  top.textContent = value;
+  // Also update the bottom to the new value (will show after flip completes)
+  
+  // Start the flip animation
+  digitEl.classList.remove('flipped');
+  digitEl.classList.add('flipping');
+  
+  // After the animation completes, finalize
+  setTimeout(() => {
+    digitEl.classList.remove('flipping');
+    digitEl.classList.add('flipped');
+    top.textContent = value;
+    bottom.textContent = value;
+    digitEl.dataset.digit = value;
+  }, 800); // 400ms top + 400ms bottom
+}
+
+function setFlipDigitImmediate(digitEl, value) {
+  const top = digitEl.querySelector('.flip-top');
+  const bottom = digitEl.querySelector('.flip-bottom');
+  top.textContent = value;
+  bottom.textContent = value;
+  digitEl.dataset.digit = value;
+  digitEl.classList.remove('flipping', 'flipped');
+}
+
+function updateFlipClock() {
+  const timeStr = formatTime(state.timer.timeLeft);
+  if (timeStr === prevFlipTime) return;
+  
+  const digits = timeStr.replace(':', '').split('');
+  
+  const digitIds = ['tensMin', 'onesMin', 'tensSec', 'onesSec'];
+  digitIds.forEach((id, i) => {
+    const el = flipDigits[id];
+    const newVal = digits[i];
+    if (el.dataset.digit !== newVal) {
+      if (prevFlipTime === '') {
+        setFlipDigitImmediate(el, newVal);
+      } else {
+        setFlipDigit(el, newVal);
+      }
+    }
+  });
+  
+  prevFlipTime = timeStr;
+}
+
+function updateTimerDisplay() {
+  // Update ring timer text
+  timerDisplay.textContent = formatTime(state.timer.timeLeft);
+  
+  const phases = {
+    focus: 'Focus',
+    shortBreak: 'Short Break',
+    longBreak: 'Long Break'
+  };
+  timerPhase.textContent = phases[state.timer.phase];
+  
+  // Use category color if one is selected, otherwise phase defaults
+  const selectedCat = state.timer.selectedCategoryId
+    ? window.allCategories?.find(c => c.id === state.timer.selectedCategoryId)
+    : null;
+  
+  let timerColor;
+  if (selectedCat) {
+    timerColor = selectedCat.color;
+  } else {
+    const defaultColors = {
+      focus: 'var(--primary)',
+      shortBreak: '#4CAF50',
+      longBreak: '#2196F3'
+    };
+    timerColor = defaultColors[state.timer.phase];
+  }
+  
+  progressBar.style.stroke = timerColor;
+  timerPhase.style.color = timerColor;
+  
+  updateProgress();
+  updateSessionStatus();
+  
+  // Also update flip clock if enabled
+  if (flipClockEnabled) {
+    updateFlipClock();
+  }
+}
+
+function toggleFlipClock() {
+  flipClockEnabled = !flipClockEnabled;
+  
+  if (flipClockEnabled) {
+    ringTimer.classList.add('hidden');
+    flipClock.classList.remove('hidden');
+    flipToggle.textContent = '🔢';
+    flipToggle.title = 'Show Ring Timer';
+    prevFlipTime = '';
+    updateFlipClock();
+  } else {
+    ringTimer.classList.remove('hidden');
+    flipClock.classList.add('hidden');
+    flipToggle.textContent = '🔄';
+    flipToggle.title = 'Toggle Flip Clock';
+  }
+  
+  // Save preference to settings
+  saveSettings({ flipClock: flipClockEnabled });
+}
+
+// === Flip Clock Toggle ===
+flipToggle.addEventListener('click', toggleFlipClock);
 
 // === Init ===
 async function init() {
