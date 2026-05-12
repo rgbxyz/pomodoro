@@ -15,6 +15,8 @@
         <h1>Pomodoro</h1>
       </div>
       <div class="header-actions">
+        <button id="vizToggleBtn" class="btn-icon" title="Cycle Visualizer">🔄</button>
+        <button id="fullscreenBtn" class="btn-icon" title="Fullscreen Mode">⛶</button>
         <button id="darkModeToggle" class="btn-icon" title="Toggle Dark Mode">🌙</button>
       </div>
     </header>
@@ -37,8 +39,9 @@
 
     <!-- Timer View -->
     <section id="view-timer" class="view active">
-      <div class="timer-display">
+      <div class="timer-display" id="timerDisplayEl">
         <div class="timer-visualizer" id="timerVisualizer">
+          <!-- Standard ring timer -->
           <div class="timer-progress-ring" id="ringTimer">
             <svg width="280" height="280" viewBox="0 0 280 280">
               <circle cx="140" cy="140" r="125" class="progress-bg" />
@@ -50,6 +53,29 @@
               <div class="timer-time" id="timerDisplay">25:00</div>
               <div class="timer-category" id="timerCategory">Select a category</div>
             </div>
+          </div>
+          <!-- Flip clock -->
+          <div class="flip-clock" id="flipClock">
+            <div class="flip-clock-digits" id="flipDigits">
+              <div class="flip-digit">
+                <div class="flip-digit-top" id="flipMinT">2</div>
+                <div class="flip-digit-bottom" id="flipMinB">2</div>
+              </div>
+              <div class="flip-digit">
+                <div class="flip-digit-top" id="flipMinU">5</div>
+                <div class="flip-digit-bottom" id="flipMinUB">5</div>
+              </div>
+              <div class="flip-separator">:</div>
+              <div class="flip-digit">
+                <div class="flip-digit-top" id="flipSecT">0</div>
+                <div class="flip-digit-bottom" id="flipSecB">0</div>
+              </div>
+              <div class="flip-digit">
+                <div class="flip-digit-top" id="flipSecU">0</div>
+                <div class="flip-digit-bottom" id="flipSecUB">0</div>
+              </div>
+            </div>
+            <div class="flip-phase" id="flipPhase">Focus</div>
           </div>
           <!-- Ripple container -->
           <div class="ripple-container" id="rippleContainer"></div>
@@ -70,6 +96,24 @@
         <div id="timerCategories" class="category-grid-small"></div>
       </div>
     </section>
+
+    <!-- Fullscreen Overlay -->
+    <div id="fullscreenOverlay" class="fullscreen-overlay hidden">
+      <div class="fullscreen-content">
+        <div class="fullscreen-timer" id="fullscreenTimer">25:00</div>
+        <div class="fullscreen-phase" id="fullscreenPhase">Focus</div>
+        <div class="fullscreen-controls">
+          <button id="fsStartBtn" class="btn btn-primary">Start</button>
+          <button id="fsPauseBtn" class="btn btn-secondary" disabled>Pause</button>
+          <button id="fsResetBtn" class="btn btn-secondary">Reset</button>
+        </div>
+        <div class="fullscreen-info">
+          <span id="fsPomodoroCount">Pomodoro #0</span>
+          <span id="fsSessionStatus">Ready to focus</span>
+        </div>
+        <button id="fsCloseBtn" class="fullscreen-close">✕ Exit Fullscreen</button>
+      </div>
+    </div>
 
     <!-- Categories View -->
     <section id="view-categories" class="view">
@@ -147,6 +191,7 @@
           <label>Timer Visualizer</label>
           <div class="visualizer-selector" id="visualizerSelector">
             <button class="viz-btn active" data-viz="classic">🎯 Classic</button>
+            <button class="viz-btn" data-viz="flip">🔄 Flip</button>
             <button class="viz-btn" data-viz="gradient">🌈 Gradient</button>
             <button class="viz-btn" data-viz="glow">✨ Glow</button>
             <button class="viz-btn" data-viz="dashed">📏 Dashed</button>
