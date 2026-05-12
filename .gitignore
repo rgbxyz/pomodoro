@@ -1,0 +1,7 @@
+node_modules/
+data/sessions.json
+pomodoro.log
+.DS_Store
+Thumbs.db
+*.log
+.env

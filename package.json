@@ -1,0 +1,16 @@
+{
+  "name": "pomodoro",
+  "version": "1.0.0",
+  "description": "A Pomodoro timer app with focus categories and statistics",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["pomodoro", "timer", "productivity"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

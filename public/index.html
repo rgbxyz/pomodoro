@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Focus Timer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🍅</span>
+        <h1>Pomodoro</h1>
+      </div>
+      <div class="header-actions">
+        <button id="darkModeToggle" class="btn-icon" title="Toggle Dark Mode">🌙</button>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <button class="nav-btn active" data-view="timer">
+        <span>⏱️</span> Timer
+      </button>
+      <button class="nav-btn" data-view="categories">
+        <span>📂</span> Categories
+      </button>
+      <button class="nav-btn" data-view="statistics">
+        <span>📊</span> Statistics
+      </button>
+      <button class="nav-btn" data-view="settings">
+        <span>⚙️</span> Settings
+      </button>
+    </nav>
+
+    <!-- Timer View -->
+    <section id="view-timer" class="view active">
+      <div class="timer-display">
+        <div class="timer-progress-ring">
+          <svg width="280" height="280" viewBox="0 0 280 280">
+            <circle cx="140" cy="140" r="125" class="progress-bg" />
+            <circle cx="140" cy="140" r="125" class="progress-bar" />
+          </svg>
+          <div class="timer-inner">
+            <div class="timer-phase" id="timerPhase">Focus</div>
+            <div class="timer-time" id="timerDisplay">25:00</div>
+            <div class="timer-category" id="timerCategory">Select a category</div>
+          </div>
+        </div>
+        <div class="timer-controls">
+          <button id="startBtn" class="btn btn-primary">Start</button>
+          <button id="pauseBtn" class="btn btn-secondary" disabled>Pause</button>
+          <button id="resetBtn" class="btn btn-secondary">Reset</button>
+        </div>
+        <div class="timer-info">
+          <span id="pomodoroCount">Pomodoro #0</span>
+          <span id="sessionStatus">Ready to focus</span>
+        </div>
+      </div>
+
+      <div class="category-selector">
+        <h3>What are you focusing on?</h3>
+        <div id="timerCategories" class="category-grid-small"></div>
+      </div>
+    </section>
+
+    <!-- Categories View -->
+    <section id="view-categories" class="view">
+      <div class="view-header">
+        <h2>Focus Categories</h2>
+        <button id="addCategoryBtn" class="btn btn-primary">+ Add Category</button>
+      </div>
+      <div id="categoriesList" class="categories-list"></div>
+    </section>
+
+    <!-- Statistics View -->
+    <section id="view-statistics" class="view">
+      <div class="view-header">
+        <h2>Statistics</h2>
+        <div class="stats-tabs">
+          <button class="stats-tab active" data-period="today">Today</button>
+          <button class="stats-tab" data-period="week">This Week</button>
+          <button class="stats-tab" data-period="month">This Month</button>
+          <button class="stats-tab" data-period="all">All Time</button>
+        </div>
+      </div>
+      <div class="stats-overview">
+        <div class="stat-card">
+          <span class="stat-label">Sessions</span>
+          <span class="stat-value" id="statSessions">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Focus Time</span>
+          <span class="stat-value" id="statTime">0h 0m</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Current Streak</span>
+          <span class="stat-value" id="statStreak">0 days</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Best Streak</span>
+          <span class="stat-value" id="statBestStreak">0 days</span>
+        </div>
+      </div>
+      <div class="stats-charts">
+        <div class="chart-container">
+          <h3>Last 7 Days</h3>
+          <canvas id="weeklyChart" width="400" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>By Category</h3>
+          <canvas id="categoryChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings View -->
+    <section id="view-settings" class="view">
+      <div class="view-header">
+        <h2>Settings</h2>
+      </div>
+      <div class="settings-form">
+        <div class="setting-group">
+          <label for="focusDuration">Focus Duration (minutes)</label>
+          <input type="number" id="focusDuration" min="1" max="120" value="25">
+        </div>
+        <div class="setting-group">
+          <label for="shortBreak">Short Break (minutes)</label>
+          <input type="number" id="shortBreak" min="1" max="30" value="5">
+        </div>
+        <div class="setting-group">
+          <label for="longBreak">Long Break (minutes)</label>
+          <input type="number" id="longBreak" min="1" max="60" value="15">
+        </div>
+        <div class="setting-group">
+          <label for="longBreakInterval">Long Break Every (pomodoros)</label>
+          <input type="number" id="longBreakInterval" min="1" max="10" value="4">
+        </div>
+        <div class="setting-group">
+          <label>Sound Notification</label>
+          <label class="toggle">
+            <input type="checkbox" id="soundEnabled" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Category Modal -->
+  <div id="categoryModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Category</h3>
+        <button class="btn-icon modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="catName">Name</label>
+          <input type="text" id="catName" placeholder="e.g., Work, Study...">
+        </div>
+        <div class="form-group">
+          <label for="catIcon">Icon</label>
+          <input type="text" id="catIcon" placeholder="Click an emoji below or type one" maxlength="4">
+          <div class="emoji-grid" id="emojiGrid"></div>
+        </div>
+        <div class="form-group">
+          <label for="catColor">Color</label>
+          <input type="color" id="catColor" value="#4CAF50">
+        </div>
+        <input type="hidden" id="catId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-cancel">Cancel</button>
+        <button id="saveCategoryBtn" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio context for beep -->
+  <script src="js/app.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/statistics.js"></script>
+</body>
+</html>
